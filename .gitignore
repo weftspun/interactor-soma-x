@@ -145,3 +145,17 @@ assets/SMPLX/SMPLX_NEUTRAL.npz
 assets/GarmentMeasurements/point.npz
 
 public/
+
+# The asset tree is a RELEASE ARTIFACT, not tracked content.
+#
+# It was Git LFS until 0.1.0-dev.1, and LFS is unavailable in the weftspun workspace: with
+# `assets/** filter=lfs` in .gitattributes, checkout fails on a missing git-lfs binary and
+# `repo sync` cannot initialize the work tree for this project at all. LFS is also invisible to
+# `repo status`, which is the objection CLAUDE.md already raises against git submodules -- a
+# second dependency mechanism the workspace's own tooling cannot see.
+#
+# Inlining the bytes was never possible: the largest object is 664 MB against GitHub's 100 MB
+# per-file limit. Fetch them with `assets/fetch.sh`, following the same pattern
+# `swing-twist-kusudama` uses for its Parquet datasets.
+assets/*
+!assets/fetch.sh

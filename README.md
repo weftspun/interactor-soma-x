@@ -8,6 +8,39 @@
 
 **[Documentation](https://nvlabs.github.io/SOMA-X/stable/)** | [PyPI](https://pypi.org/project/py-soma-x/) | [Changelog](CHANGELOG.md)
 
+## Assets
+
+The `assets/` tree is a **GitHub release artifact**, not committed in-tree (`assets/*` is
+gitignored). Fetch it with `assets/fetch.sh`, or by hand:
+
+```sh
+gh release download assets-v0.1.0-dev.1 --repo weftspun/interactor-soma-x --dir /tmp/soma
+zstd -dc /tmp/soma/soma-assets-*.tar.zst | tar -xf - -C /tmp/soma
+```
+
+It was Git LFS until `0.1.0-dev.1`. LFS is unavailable in the weftspun workspace, and with
+`assets/** filter=lfs` in `.gitattributes` a checkout fails on the missing binary — `repo sync`
+could not initialize the work tree for this project at all, which is how this was found. LFS is
+also invisible to `repo status`, the same objection raised against git submodules: a second
+dependency mechanism the workspace's own tooling cannot see.
+
+Inlining the bytes into Git was never an option. The largest object is 664 MB against GitHub's
+100 MB per-file limit, so a release artifact is the only mechanism that fits. The pattern
+follows `swing-twist-kusudama`, whose Parquet datasets are release artifacts fetched by a
+`data/fetch.sh`.
+
+The tag is on the dev ladder from RFD 2043 — `dev` → `beta` → `rc` → bare — and is marked
+prerelease because the version carries a `-` suffix. One `.tar.zst`, because release asset names
+are flat and `SOMA_wrap.obj` occurs in three directories, and because CLAUDE.md's archive rule
+rules out zip and gzip. `SHA256SUMS.txt` ships beside it and `fetch.sh` checks against it before
+unpacking.
+
+**SMPL and SMPL-X assets are excluded.** `anny/AGENTS.md` records that SMPL-X is non-commercial
+only, which fails the licence bar applied everywhere else in this workspace — commercial use and
+derivatives. Five files are affected and are named in the release notes rather than quietly
+dropped, since a silent omission reads exactly like a complete set. Code paths that expect
+`assets/SMPL*` will not find it, and that is the intended state.
+
 ## Overview
 
 Parametric human body models, including SMPL, SMPL-X, MHR, Anny, and GarmentMeasurements, are central to a wide range of tasks in human reconstruction, animation, and simulation. However, these models are inherently incompatible: each defines its own mesh topology, joint hierarchy, and parameterization, precluding seamless integration. As a result, leveraging complementary strengths across models (such as combining Anny’s age-range control with SMPL-based motion data) necessitates bespoke adapters for every model pair, hindering interoperability and limiting practical applications.
