@@ -148,10 +148,26 @@ The OBJ meshes are loaded with `trimesh.load(..., maintain_order=True, process=F
 | Folder | Backend class | Checked-in native model | OBJ correspondence pair |
 |--------|---------------|-------------------------|-------------------------|
 | `MHR/` | `MHRIdentityModel` | `mhr_model_lod{1,6}.pt` (TorchScript) | `base_body_lod{1,6}.obj` + `SOMA_wrap_lod1.obj` |
-| `SMPL/` | `SMPLIdentityModel` (type `smpl`) | -- (see below) | `base_body.obj` + `SOMA_wrap.obj` |
-| `SMPLX/` | `SMPLIdentityModel` (type `smplx`) | -- (see below) | `base_body.obj` + `SOMA_wrap.obj` |
+| `SMPL/` | `SMPLIdentityModel` (type `smpl`) | -- (see below) | `base_body.obj` + `SOMA_wrap.obj` **(not distributed, see note)** |
+| `SMPLX/` | `SMPLIdentityModel` (type `smplx`) | -- (see below) | `base_body.obj` + `SOMA_wrap.obj` **(not distributed, see note)** |
 | `Anny/` | `AnnyIdentityModel` | (loaded from the `anny` Python package at runtime) | `base_body.obj` + `SOMA_wrap.obj` |
 | `GarmentMeasurements/` | `GarmentMeasurementIdentityModel` | -- (see below) | `mean.obj` + `SOMA_wrap.obj` |
+
+> **SMPL and SMPL-X assets are not distributed.** As of the `assets-v0.1.0-dev.1` release the
+> five files under `assets/SMPL/` and `assets/SMPLX/` are excluded: SMPL-X is non-commercial
+> only (`anny/AGENTS.md`), which fails the licence bar applied to every other asset here.
+>
+> This changes the failure message and not the reachable behaviour. Every code path that loads
+> those meshes also needs `SMPL_NEUTRAL.pkl` or `SMPLX_NEUTRAL.npz`, which are gated behind
+> `smpl.is.tue.mpg.de` and have never shipped in this repository — `_resolve_model_path` raises
+> on the gated model before any excluded mesh is opened. Anyone who could run these paths was
+> already supplying their own gated weights, and can supply the meshes the same way via
+> `--data-root`.
+>
+> `tools/smpl2soma.py` was the one exception: it read `smpl_anim.npy` directly before building
+> any model, so it failed on the wrong file. It now preflights both and names the licence
+> boundary.
+
 
 ### Optional user-placed model files
 

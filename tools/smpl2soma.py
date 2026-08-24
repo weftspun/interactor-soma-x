@@ -63,7 +63,28 @@ def main():
     data_root = Path(args.data_root) if args.data_root else repo_root / "assets"
 
     # --- Load SMPL animation ---
+    #
+    # PREFLIGHT, BECAUSE THE BARE FileNotFoundError NAMED THE WRONG PROBLEM. This tool needs two
+    # things it has never been able to ship: `SMPL_NEUTRAL.pkl`, which is gated behind
+    # smpl.is.tue.mpg.de and which the README already tells you to fetch yourself, and
+    # `smpl_anim.npy`, which left the asset release at 0.1.0-dev.1 because SMPL-X is
+    # non-commercial only and re-hosting it would redistribute a non-commercial asset.
+    #
+    # Without this, the first failure is numpy's on the .npy -- which reads as a corrupt install
+    # rather than as a licence boundary, and sends the reader looking for a missing download that
+    # was never on offer. An unmet precondition is a FAIL and it should say what is unmet.
     data_path = data_root / "SMPL" / "smpl_anim.npy"
+    model_path = data_root / "SMPL" / "SMPL_NEUTRAL.pkl"
+    missing = [str(p) for p in (data_path, model_path) if not p.is_file()]
+    if missing:
+        raise SystemExit(
+            "smpl2soma needs SMPL assets this repository does not distribute:\n  "
+            + "\n  ".join(missing)
+            + "\n\nSMPL_NEUTRAL.pkl is gated -- see the SMPL installation section of README.md."
+            "\nsmpl_anim.npy is excluded from the asset release: SMPL-X is non-commercial only"
+            "\n(anny/AGENTS.md), which fails the licence bar applied to every other asset here."
+            "\nSupply both under --data-root to run this tool."
+        )
     smpl_rot_mats = np.load(data_path, allow_pickle=True).item()
 
     body_pose_6d = torch.from_numpy(smpl_rot_mats["body_pose_6d"]).float().to(device)
