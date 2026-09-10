@@ -40,7 +40,7 @@ jobs:
         id: dv
         run: |
           ref="${GITHUB_REF}"
-          if [[ "$ref" == "refs/heads/main" ]]; then
+          if [[ "$ref" == "refs/heads/main/main" ]]; then
             version="latest"
             metadata_only="false"
           elif [[ "$ref" =~ ^refs/heads/release-([0-9]+\.[0-9]+)$ ]]; then
